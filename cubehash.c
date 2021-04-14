@@ -135,26 +135,27 @@ void cubehash_update(cubehash_t* state, const unsigned char *data, size_t len) {
   // Attempts to process the incomplete block
   if (state->remainder_length + len >= state->b) {
     memcpy(&state->remainder[state->remainder_length], data, state->b - state->remainder_length);
-    state->remainder_length = 0;
 
     cubehash_process(state, state->remainder);
 
     len -= state->b - state->remainder_length;
     data += state->b - state->remainder_length;
+
+    state->remainder_length = 0;
   }
 
-  while (len > 0 && len >= state->b) {
+  while (len >= state->b) {
     cubehash_process(state, data);
 
-    len -= state->b - state->remainder_length;
-    data += state->b - state->remainder_length;
+    len -= state->b;
+    data += state->b;
   }
 
   // Save remaining bytes
   if (len > 0) {
-    memcpy(state->remainder, data, len);
+    memcpy(&state->remainder[state->remainder_length], data, len);
 
-    state->remainder_length = len;
+    state->remainder_length += len;
   }
 }
 
